@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'action_intents.dart';
-import 'song_model.dart';
+import 'song.dart';
 import 'song_list_provider.dart';
 
 class SongEditor extends StatefulWidget {
@@ -74,9 +74,6 @@ class SongEditorState extends State<SongEditor> {
                         onPressed: () {
                           if (_titleController.text.isNotEmpty) {
                             widget._songListProvider.addSong(Song(
-                              id: widget.createNew
-                                  ? widget._songListProvider.nextId
-                                  : song!.id,
                               title: _titleController.text,
                               lyrics: _lyricsController.text,
                             ));

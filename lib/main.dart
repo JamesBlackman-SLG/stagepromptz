@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:isar/isar.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:stagepromptz/song.dart';
 import 'song_list_provider.dart';
 import 'song_list.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Hive.initFlutter();
+  final dir = await getApplicationDocumentsDirectory();
+  final Isar isar = await Isar.open(
+    [SongSchema],
+    directory: dir.path,
+  );
 
   runApp(
     ChangeNotifierProvider<SongListProvider>(
-      create: (context) => SongListProvider(),
+      create: (context) => SongListProvider(isar),
       child: const StagePromptz(),
     ),
   );
