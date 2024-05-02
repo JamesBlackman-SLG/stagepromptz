@@ -50,6 +50,7 @@ class SongListProvider with ChangeNotifier {
         isar.songs.put(song);
       }
     });
+    loadSongs();
   }
 
   void loadSongs() async {
@@ -67,12 +68,11 @@ class SongListProvider with ChangeNotifier {
   void addSong(Song song) {
     if (_songs.where((element) => element.id == song.id).isEmpty) {
       _songs.add(song);
-      notifyListeners();
+      saveSongsToDb();
       return;
     }
     final index = _songs.indexWhere((element) => element.id == song.id);
     _songs[index] = song;
-    notifyListeners();
     saveSongsToDb();
   }
 
@@ -80,7 +80,6 @@ class SongListProvider with ChangeNotifier {
     if (index >= 0 && index < _songs.length) {
       _editingSong = _songs[index];
       _songs.removeAt(index);
-      notifyListeners();
       saveSongsToDb();
     }
   }
@@ -89,7 +88,6 @@ class SongListProvider with ChangeNotifier {
     if (_editingSong != null) {
       _songs.insert(_currentIndex, _editingSong!);
       _editingSong = null;
-      notifyListeners();
       saveSongsToDb();
     }
   }
@@ -97,7 +95,6 @@ class SongListProvider with ChangeNotifier {
   void removeSong(int index) {
     if (index >= 0 && index < _songs.length) {
       _songs.removeAt(index);
-      notifyListeners();
       saveSongsToDb();
     }
   }
@@ -106,7 +103,6 @@ class SongListProvider with ChangeNotifier {
     final index = _songs.indexWhere((element) => element.id == song.id);
     if (index >= 0) {
       _songs[index] = song;
-      notifyListeners();
       saveSongsToDb();
     }
   }
