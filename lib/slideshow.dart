@@ -68,8 +68,8 @@ class SlideshowState extends State<Slideshow> {
           SingleActivator(LogicalKeyboardKey.arrowDown): RightKeyAction(),
           CharacterActivator("h"): LeftKeyAction(),
           CharacterActivator("l"): RightKeyAction(),
-          CharacterActivator("j"): LeftKeyAction(),
-          CharacterActivator("k"): RightKeyAction(),
+          CharacterActivator("k"): LeftKeyAction(),
+          CharacterActivator("j"): RightKeyAction(),
         },
         child: Focus(
           autofocus: true,

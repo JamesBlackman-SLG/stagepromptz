@@ -5,7 +5,9 @@ part 'song.g.dart';
 @Collection()
 class Song {
   Id id = Isar.autoIncrement;
-  final String title;
-  final String lyrics;
-  Song({required this.title, required this.lyrics});
+  String title;
+  String lyrics;
+  @Index(unique: true)
+  int position;
+  Song({required this.title, required this.lyrics, required this.position});
 }

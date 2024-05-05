@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
+import 'package:stagepromptz/song.dart';
 import 'action_intents.dart';
 import 'slideshow.dart';
 import 'song_editor.dart';
@@ -43,13 +43,20 @@ class _SongListState extends State<SongList> {
     );
   }
 
-  void _cutSong(int index) {
-    widget.songListProvider.editingSong = widget.songListProvider.songs[index];
-    widget.songListProvider.removeSong(index);
+  void _cutSong() {
+    widget.songListProvider.cutSong().then((value) {
+      _refreshSongs();
+    });
   }
 
   void _pasteSong() {
-    widget.songListProvider.pasteSong();
+    widget.songListProvider.pasteSong().then((value) {
+      _refreshSongs();
+    });
+  }
+
+  void _refreshSongs() {
+    widget.songListProvider.loadSongs();
   }
 
   @override
@@ -81,7 +88,7 @@ class _SongListState extends State<SongList> {
         ),
         DeleteAction: CallbackAction<DeleteAction>(
           onInvoke: (Intent intent) {
-            _cutSong(widget.songListProvider.currentIndex);
+            _cutSong();
             return true;
           },
         ),
@@ -94,6 +101,12 @@ class _SongListState extends State<SongList> {
         PasteAction: CallbackAction<PasteAction>(
           onInvoke: (Intent intent) {
             _pasteSong();
+            return true;
+          },
+        ),
+        RefreshAction: CallbackAction<RefreshAction>(
+          onInvoke: (Intent intent) {
+            _refreshSongs();
             return true;
           },
         ),
@@ -113,48 +126,16 @@ class _SongListState extends State<SongList> {
           CharacterActivator("x"): DeleteAction(),
           CharacterActivator("i"): CreateAction(),
           CharacterActivator("v"): PasteAction(),
+          CharacterActivator("r"): RefreshAction(),
         },
         child: Focus(
           focusNode: focusNode,
           autofocus: true,
           child: Scaffold(
             appBar: AppBar(
-              title: const Text('Song List'),
+              title: Text('Song List ${widget.songListProvider.currentIndex}'),
             ),
-            body: ListView.builder(
-              itemCount: widget.songListProvider.songs.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  onFocusChange: (v) {
-                    if (v) widget.songListProvider.currentIndex = index;
-                  },
-                  title: Text(widget.songListProvider.songs[index].title),
-                  // subtitle: Text(songListProvider.songs[index].lyrics),
-                  // trailing: IconButton.outlined(
-                  //   onPressed: () {
-                  //     songListProvider.removeSong(index);
-                  //   },
-                  //   icon: const Icon(Icons.delete),
-                  // ),
-                  leading: Text('${widget.songListProvider.songs[index].id}'),
-
-                  onLongPress: () {
-                    _editSong(index);
-                  },
-                  onTap: () {
-                    widget.songListProvider.currentIndex = index;
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => Slideshow(
-                          widget.songListProvider,
-                        ),
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
+            body: listSongs(),
             floatingActionButton: FloatingActionButton(
               onPressed: () {
                 _createSong();
@@ -164,6 +145,80 @@ class _SongListState extends State<SongList> {
           ),
         ),
       ),
+    );
+  }
+
+  StreamBuilder<List<Song>> streamSongs() {
+    return StreamBuilder<List<Song>>(
+      stream: widget.songListProvider.service.listenToSongs(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          return ListView.builder(
+            itemCount: snapshot.data!.length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                title: Text(snapshot.data![index].title),
+                leading: Text('${snapshot.data![index].id}'),
+                onLongPress: () {
+                  _editSong(index);
+                },
+                onTap: () {
+                  widget.songListProvider.currentIndex = index;
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => Slideshow(
+                        widget.songListProvider,
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+          );
+        }
+        return const CircularProgressIndicator();
+      },
+    );
+  }
+
+  ListView listSongs() {
+    return ListView.builder(
+      itemCount: widget.songListProvider.songs.length,
+      itemBuilder: (context, index) {
+        return ListTile(
+          key: Key(widget.songListProvider.songs[index].id.toString()),
+          onFocusChange: (v) {
+            if (v) widget.songListProvider.currentIndex = index;
+          },
+          title: Text(
+            widget.songListProvider.songs[index].title,
+          ),
+          // subtitle: Text(songListProvider.songs[index].lyrics),
+          // trailing: IconButton.outlined(
+          //   onPressed: () {
+          //     songListProvider.removeSong(index);
+          //   },
+          //   icon: const Icon(Icons.delete),
+          // ),
+          leading: Text('${widget.songListProvider.songs[index].id}'),
+          trailing: Text('${widget.songListProvider.songs[index].position}'),
+          onLongPress: () {
+            _editSong(index);
+          },
+          onTap: () {
+            widget.songListProvider.currentIndex = index;
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => Slideshow(
+                  widget.songListProvider,
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

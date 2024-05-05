@@ -27,3 +27,7 @@ class CreateAction extends Intent {
 class PasteAction extends Intent {
   const PasteAction();
 }
+
+class RefreshAction extends Intent {
+  const RefreshAction();
+}

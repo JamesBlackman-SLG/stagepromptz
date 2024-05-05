@@ -22,8 +22,13 @@ const SongSchema = CollectionSchema(
       name: r'lyrics',
       type: IsarType.string,
     ),
-    r'title': PropertySchema(
+    r'position': PropertySchema(
       id: 1,
+      name: r'position',
+      type: IsarType.long,
+    ),
+    r'title': PropertySchema(
+      id: 2,
       name: r'title',
       type: IsarType.string,
     )
@@ -33,7 +38,21 @@ const SongSchema = CollectionSchema(
   deserialize: _songDeserialize,
   deserializeProp: _songDeserializeProp,
   idName: r'id',
-  indexes: {},
+  indexes: {
+    r'position': IndexSchema(
+      id: 5117117876086213592,
+      name: r'position',
+      unique: true,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'position',
+          type: IndexType.value,
+          caseSensitive: false,
+        )
+      ],
+    )
+  },
   links: {},
   embeddedSchemas: {},
   getId: _songGetId,
@@ -60,7 +79,8 @@ void _songSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeString(offsets[0], object.lyrics);
-  writer.writeString(offsets[1], object.title);
+  writer.writeLong(offsets[1], object.position);
+  writer.writeString(offsets[2], object.title);
 }
 
 Song _songDeserialize(
@@ -71,7 +91,8 @@ Song _songDeserialize(
 ) {
   final object = Song(
     lyrics: reader.readString(offsets[0]),
-    title: reader.readString(offsets[1]),
+    position: reader.readLong(offsets[1]),
+    title: reader.readString(offsets[2]),
   );
   object.id = id;
   return object;
@@ -87,6 +108,8 @@ P _songDeserializeProp<P>(
     case 0:
       return (reader.readString(offset)) as P;
     case 1:
+      return (reader.readLong(offset)) as P;
+    case 2:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -105,10 +128,72 @@ void _songAttach(IsarCollection<dynamic> col, Id id, Song object) {
   object.id = id;
 }
 
+extension SongByIndex on IsarCollection<Song> {
+  Future<Song?> getByPosition(int position) {
+    return getByIndex(r'position', [position]);
+  }
+
+  Song? getByPositionSync(int position) {
+    return getByIndexSync(r'position', [position]);
+  }
+
+  Future<bool> deleteByPosition(int position) {
+    return deleteByIndex(r'position', [position]);
+  }
+
+  bool deleteByPositionSync(int position) {
+    return deleteByIndexSync(r'position', [position]);
+  }
+
+  Future<List<Song?>> getAllByPosition(List<int> positionValues) {
+    final values = positionValues.map((e) => [e]).toList();
+    return getAllByIndex(r'position', values);
+  }
+
+  List<Song?> getAllByPositionSync(List<int> positionValues) {
+    final values = positionValues.map((e) => [e]).toList();
+    return getAllByIndexSync(r'position', values);
+  }
+
+  Future<int> deleteAllByPosition(List<int> positionValues) {
+    final values = positionValues.map((e) => [e]).toList();
+    return deleteAllByIndex(r'position', values);
+  }
+
+  int deleteAllByPositionSync(List<int> positionValues) {
+    final values = positionValues.map((e) => [e]).toList();
+    return deleteAllByIndexSync(r'position', values);
+  }
+
+  Future<Id> putByPosition(Song object) {
+    return putByIndex(r'position', object);
+  }
+
+  Id putByPositionSync(Song object, {bool saveLinks = true}) {
+    return putByIndexSync(r'position', object, saveLinks: saveLinks);
+  }
+
+  Future<List<Id>> putAllByPosition(List<Song> objects) {
+    return putAllByIndex(r'position', objects);
+  }
+
+  List<Id> putAllByPositionSync(List<Song> objects, {bool saveLinks = true}) {
+    return putAllByIndexSync(r'position', objects, saveLinks: saveLinks);
+  }
+}
+
 extension SongQueryWhereSort on QueryBuilder<Song, Song, QWhere> {
   QueryBuilder<Song, Song, QAfterWhere> anyId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterWhere> anyPosition() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        const IndexWhereClause.any(indexName: r'position'),
+      );
     });
   }
 }
@@ -174,6 +259,94 @@ extension SongQueryWhere on QueryBuilder<Song, Song, QWhereClause> {
         lower: lowerId,
         includeLower: includeLower,
         upper: upperId,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterWhereClause> positionEqualTo(int position) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'position',
+        value: [position],
+      ));
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterWhereClause> positionNotEqualTo(int position) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'position',
+              lower: [],
+              upper: [position],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'position',
+              lower: [position],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'position',
+              lower: [position],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'position',
+              lower: [],
+              upper: [position],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterWhereClause> positionGreaterThan(
+    int position, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'position',
+        lower: [position],
+        includeLower: include,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterWhereClause> positionLessThan(
+    int position, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'position',
+        lower: [],
+        upper: [position],
+        includeUpper: include,
+      ));
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterWhereClause> positionBetween(
+    int lowerPosition,
+    int upperPosition, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'position',
+        lower: [lowerPosition],
+        includeLower: includeLower,
+        upper: [upperPosition],
         includeUpper: includeUpper,
       ));
     });
@@ -361,6 +534,58 @@ extension SongQueryFilter on QueryBuilder<Song, Song, QFilterCondition> {
     });
   }
 
+  QueryBuilder<Song, Song, QAfterFilterCondition> positionEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'position',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterFilterCondition> positionGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'position',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterFilterCondition> positionLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'position',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterFilterCondition> positionBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'position',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
   QueryBuilder<Song, Song, QAfterFilterCondition> titleEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -507,6 +732,18 @@ extension SongQuerySortBy on QueryBuilder<Song, Song, QSortBy> {
     });
   }
 
+  QueryBuilder<Song, Song, QAfterSortBy> sortByPosition() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'position', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterSortBy> sortByPositionDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'position', Sort.desc);
+    });
+  }
+
   QueryBuilder<Song, Song, QAfterSortBy> sortByTitle() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'title', Sort.asc);
@@ -545,6 +782,18 @@ extension SongQuerySortThenBy on QueryBuilder<Song, Song, QSortThenBy> {
     });
   }
 
+  QueryBuilder<Song, Song, QAfterSortBy> thenByPosition() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'position', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterSortBy> thenByPositionDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'position', Sort.desc);
+    });
+  }
+
   QueryBuilder<Song, Song, QAfterSortBy> thenByTitle() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'title', Sort.asc);
@@ -566,6 +815,12 @@ extension SongQueryWhereDistinct on QueryBuilder<Song, Song, QDistinct> {
     });
   }
 
+  QueryBuilder<Song, Song, QDistinct> distinctByPosition() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'position');
+    });
+  }
+
   QueryBuilder<Song, Song, QDistinct> distinctByTitle(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -584,6 +839,12 @@ extension SongQueryProperty on QueryBuilder<Song, Song, QQueryProperty> {
   QueryBuilder<Song, String, QQueryOperations> lyricsProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'lyrics');
+    });
+  }
+
+  QueryBuilder<Song, int, QQueryOperations> positionProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'position');
     });
   }
 

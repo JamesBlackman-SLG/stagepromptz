@@ -17,6 +17,7 @@ class SongEditor extends StatefulWidget {
 class SongEditorState extends State<SongEditor> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _lyricsController = TextEditingController();
+
   late final Song? song;
   @override
   void initState() {
@@ -35,6 +36,37 @@ class SongEditorState extends State<SongEditor> {
     super.dispose();
   }
 
+  Future<void> _addNewSong() async {
+    int position = widget._songListProvider.songs.isEmpty
+        ? 0
+        : widget._songListProvider.songs[widget._songListProvider.currentIndex]
+            .position;
+    widget._songListProvider
+        .addSong(Song(
+      title: _titleController.text,
+      lyrics: _lyricsController.text,
+      position: position,
+    ))
+        .then((value) {
+      widget._songListProvider.loadSongs();
+      _titleController.clear();
+      _lyricsController.clear();
+      Navigator.pop(context);
+    });
+  }
+
+  Future<void> _updateSong() async {
+    song!.title = _titleController.text;
+    song!.lyrics = _lyricsController.text;
+
+    widget._songListProvider.updateSong(song!).then((value) {
+      widget._songListProvider.loadSongs();
+      _titleController.clear();
+      _lyricsController.clear();
+      Navigator.pop(context);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Actions(
@@ -49,51 +81,65 @@ class SongEditorState extends State<SongEditor> {
         shortcuts: const {
           SingleActivator(LogicalKeyboardKey.escape): PopAction(),
         },
-        child: Focus(
-          autofocus: true,
-          child: Scaffold(
-            body: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  TextField(
-                    controller: _titleController,
-                    decoration: const InputDecoration(labelText: 'Title'),
-                  ),
-                  TextField(
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text(widget.createNew ? 'New Song' : 'Edit Song'),
+            actions: [
+              if (!widget.createNew)
+                IconButton(
+                  icon: const Icon(Icons.delete),
+                  onPressed: () {
+                    widget._songListProvider.cutSong();
+                    Navigator.pop(context);
+                  },
+                ),
+            ],
+          ),
+          body: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                TextField(
+                  autofocus: true,
+                  controller: _titleController,
+                  decoration: const InputDecoration(labelText: 'Title'),
+                ),
+                Expanded(
+                  child: TextField(
                     controller: _lyricsController,
                     decoration: const InputDecoration(labelText: 'Lyrics'),
                     minLines: 10,
                     maxLines: 200,
                   ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          if (_titleController.text.isNotEmpty) {
-                            widget._songListProvider.addSong(Song(
-                              title: _titleController.text,
-                              lyrics: _lyricsController.text,
-                            ));
-                            _titleController.clear();
-                            _lyricsController.clear();
-                            Navigator.pop(context);
-                          }
-                        },
-                        child: const Text('Save Song'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        child: const Text('Cancel'),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
+          bottomNavigationBar: BottomAppBar(
+            color: Colors.black,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: () async {
+                    if (_titleController.text.isNotEmpty) {
+                      if (widget.createNew) {
+                        _addNewSong();
+                      } else {
+                        _updateSong();
+                      }
+                    }
+                  },
+                  child: const Text('Save Song'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Cancel'),
+                ),
+              ],
             ),
           ),
         ),

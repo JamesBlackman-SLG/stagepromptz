@@ -1,29 +1,16 @@
 import 'package:flutter/material.dart' show ChangeNotifier;
-import 'package:isar/isar.dart';
 
+import 'isar_service.dart';
 import 'song.dart';
 
 class SongListProvider with ChangeNotifier {
-  final Isar isar;
-  SongListProvider(this.isar) {
+  final service = IsarService();
+
+  SongListProvider() {
     loadSongs();
   }
 
-  final List<Song> _songs = [
-    //   Song(id: 1, title: "Hey Jude", lyrics: "Hey Jude, Don't make it bad..."),
-    //   Song(
-    //       id: 2,
-    //       title: "Yesterday",
-    //       lyrics: "Yesterday, all my troubles seemed so far away..."),
-    //   Song(
-    //       id: 3,
-    //       title: "Let It Be",
-    //       lyrics: "When I find myself in times of trouble..."),
-    //   Song(
-    //       id: 4,
-    //       title: "Yellow Submarine",
-    //       lyrics: "In the town where I was born..."),
-  ];
+  final List<Song> _songs = [];
 
   int _currentIndex = 0;
   Song? _editingSong;
@@ -43,67 +30,36 @@ class SongListProvider with ChangeNotifier {
 
   List<Song> get songs => _songs;
 
-  void saveSongsToDb() async {
-    await isar.writeTxn(() async {
-      isar.songs.clear();
-      for (final song in _songs) {
-        isar.songs.put(song);
-      }
-    });
-    loadSongs();
-  }
-
   void loadSongs() async {
     _songs.clear();
-    final List<Song> songs = await loadSongsFromDb();
-    _songs.addAll(songs);
+    notifyListeners();
+    _songs.addAll(await loadSongsFromDb());
     notifyListeners();
   }
 
   Future<List<Song>> loadSongsFromDb() async {
-    _songs.clear();
-    return await isar.songs.where().findAll();
+    return await service.loadSongs();
   }
 
-  void addSong(Song song) {
-    if (_songs.where((element) => element.id == song.id).isEmpty) {
-      _songs.add(song);
-      saveSongsToDb();
-      return;
-    }
-    final index = _songs.indexWhere((element) => element.id == song.id);
-    _songs[index] = song;
-    saveSongsToDb();
+  Future<void> addSong(Song song) {
+    int position = songs.isEmpty ? 0 : songs[_currentIndex].position;
+    return service.insertSong(song, position);
   }
 
-  void cutSong(int index) {
-    if (index >= 0 && index < _songs.length) {
-      _editingSong = _songs[index];
-      _songs.removeAt(index);
-      saveSongsToDb();
-    }
+  Future<void> cutSong() {
+    editingSong = _songs[_currentIndex];
+    return service.removeSong(_songs[_currentIndex]);
   }
 
-  void pasteSong() {
-    if (_editingSong != null) {
-      _songs.insert(_currentIndex, _editingSong!);
-      _editingSong = null;
-      saveSongsToDb();
+  Future<void> pasteSong() {
+    if (_editingSong == null) {
+      return Future.value();
     }
+    int position = songs.isEmpty ? 0 : songs[_currentIndex].position;
+    return service.insertSong(_editingSong!, position);
   }
 
-  void removeSong(int index) {
-    if (index >= 0 && index < _songs.length) {
-      _songs.removeAt(index);
-      saveSongsToDb();
-    }
-  }
-
-  void updateSong(Song song) {
-    final index = _songs.indexWhere((element) => element.id == song.id);
-    if (index >= 0) {
-      _songs[index] = song;
-      saveSongsToDb();
-    }
+  Future<void> updateSong(Song song) {
+    return service.updateSong(song);
   }
 }
