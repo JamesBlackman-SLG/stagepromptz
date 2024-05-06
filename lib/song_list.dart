@@ -133,7 +133,7 @@ class _SongListState extends State<SongList> {
           autofocus: true,
           child: Scaffold(
             appBar: AppBar(
-              title: Text('Song List ${widget.songListProvider.currentIndex}'),
+              title: const Text('Song List'),
             ),
             body: listSongs(),
             floatingActionButton: FloatingActionButton(
@@ -148,39 +148,39 @@ class _SongListState extends State<SongList> {
     );
   }
 
-  StreamBuilder<List<Song>> streamSongs() {
-    return StreamBuilder<List<Song>>(
-      stream: widget.songListProvider.service.listenToSongs(),
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          return ListView.builder(
-            itemCount: snapshot.data!.length,
-            itemBuilder: (context, index) {
-              return ListTile(
-                title: Text(snapshot.data![index].title),
-                leading: Text('${snapshot.data![index].id}'),
-                onLongPress: () {
-                  _editSong(index);
-                },
-                onTap: () {
-                  widget.songListProvider.currentIndex = index;
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => Slideshow(
-                        widget.songListProvider,
-                      ),
-                    ),
-                  );
-                },
-              );
-            },
-          );
-        }
-        return const CircularProgressIndicator();
-      },
-    );
-  }
+  // StreamBuilder<List<Song>> streamSongs() {
+  //   return StreamBuilder<List<Song>>(
+  //     stream: widget.songListProvider.songService.listenToSongs(),
+  //     builder: (context, snapshot) {
+  //       if (snapshot.hasData) {
+  //         return ListView.builder(
+  //           itemCount: snapshot.data!.length,
+  //           itemBuilder: (context, index) {
+  //             return ListTile(
+  //               title: Text(snapshot.data![index].title),
+  //               leading: Text('${snapshot.data![index].position}'),
+  //               onLongPress: () {
+  //                 _editSong(index);
+  //               },
+  //               onTap: () {
+  //                 widget.songListProvider.currentIndex = index;
+  //                 Navigator.push(
+  //                   context,
+  //                   MaterialPageRoute(
+  //                     builder: (context) => Slideshow(
+  //                       widget.songListProvider,
+  //                     ),
+  //                   ),
+  //                 );
+  //               },
+  //             );
+  //           },
+  //         );
+  //       }
+  //       return const CircularProgressIndicator();
+  //     },
+  //   );
+  // }
 
   ListView listSongs() {
     return ListView.builder(
@@ -194,15 +194,7 @@ class _SongListState extends State<SongList> {
           title: Text(
             widget.songListProvider.songs[index].title,
           ),
-          // subtitle: Text(songListProvider.songs[index].lyrics),
-          // trailing: IconButton.outlined(
-          //   onPressed: () {
-          //     songListProvider.removeSong(index);
-          //   },
-          //   icon: const Icon(Icons.delete),
-          // ),
-          leading: Text('${widget.songListProvider.songs[index].id}'),
-          trailing: Text('${widget.songListProvider.songs[index].position}'),
+          leading: Text('${widget.songListProvider.songs[index].position}'),
           onLongPress: () {
             _editSong(index);
           },

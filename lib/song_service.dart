@@ -1,12 +1,13 @@
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:stagepromptz/settings.dart';
 
 import 'song.dart';
 
-class IsarService {
+class SongService {
   late Future<Isar> db;
 
-  IsarService() {
+  SongService() {
     db = openDB();
   }
 
@@ -84,7 +85,7 @@ class IsarService {
     if (Isar.instanceNames.isEmpty) {
       final dir = await getApplicationDocumentsDirectory();
       return await Isar.open(
-        [SongSchema],
+        [SongSchema, SettingsSchema],
         inspector: true,
         directory: dir.path,
       );

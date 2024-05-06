@@ -31,3 +31,11 @@ class PasteAction extends Intent {
 class RefreshAction extends Intent {
   const RefreshAction();
 }
+
+class IncrementTextScaleFactorAction extends Intent {
+  const IncrementTextScaleFactorAction();
+}
+
+class DecrementTextScaleFactorAction extends Intent {
+  const DecrementTextScaleFactorAction();
+}

@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart' show ChangeNotifier;
 
-import 'isar_service.dart';
+import 'song_service.dart';
 import 'song.dart';
 
 class SongListProvider with ChangeNotifier {
-  final service = IsarService();
-
-  SongListProvider() {
-    loadSongs();
-  }
+  final songService = SongService();
 
   final List<Song> _songs = [];
 
   int _currentIndex = 0;
+
   Song? _editingSong;
+  SongListProvider() {
+    loadSongs();
+  }
 
   int get currentIndex => _currentIndex;
 
@@ -30,6 +30,16 @@ class SongListProvider with ChangeNotifier {
 
   List<Song> get songs => _songs;
 
+  Future<void> addSong(Song song) {
+    int position = songs.isEmpty ? 0 : songs[_currentIndex].position;
+    return songService.insertSong(song, position);
+  }
+
+  Future<void> cutSong() {
+    editingSong = _songs[_currentIndex];
+    return songService.removeSong(_songs[_currentIndex]);
+  }
+
   void loadSongs() async {
     _songs.clear();
     notifyListeners();
@@ -38,17 +48,7 @@ class SongListProvider with ChangeNotifier {
   }
 
   Future<List<Song>> loadSongsFromDb() async {
-    return await service.loadSongs();
-  }
-
-  Future<void> addSong(Song song) {
-    int position = songs.isEmpty ? 0 : songs[_currentIndex].position;
-    return service.insertSong(song, position);
-  }
-
-  Future<void> cutSong() {
-    editingSong = _songs[_currentIndex];
-    return service.removeSong(_songs[_currentIndex]);
+    return await songService.loadSongs();
   }
 
   Future<void> pasteSong() {
@@ -56,10 +56,10 @@ class SongListProvider with ChangeNotifier {
       return Future.value();
     }
     int position = songs.isEmpty ? 0 : songs[_currentIndex].position;
-    return service.insertSong(_editingSong!, position);
+    return songService.insertSong(_editingSong!, position);
   }
 
   Future<void> updateSong(Song song) {
-    return service.updateSong(song);
+    return songService.updateSong(song);
   }
 }
