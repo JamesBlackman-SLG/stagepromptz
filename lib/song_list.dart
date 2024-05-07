@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:stagepromptz/song.dart';
+import 'package:stagepromptz/keyboard_shortcut.dart';
 import 'action_intents.dart';
 import 'slideshow.dart';
 import 'song_editor.dart';
@@ -61,7 +61,7 @@ class _SongListState extends State<SongList> {
 
   @override
   Widget build(BuildContext context) {
-    return Actions(
+    return KeyboardShortcut(
       actions: {
         PopAction: CallbackAction<PopAction>(
           onInvoke: (Intent intent) {
@@ -111,37 +111,35 @@ class _SongListState extends State<SongList> {
           },
         ),
       },
-      child: Shortcuts(
-        shortcuts: const {
-          SingleActivator(LogicalKeyboardKey.escape): PopAction(),
-          SingleActivator(LogicalKeyboardKey.arrowLeft): LeftKeyAction(),
-          SingleActivator(LogicalKeyboardKey.arrowRight): RightKeyAction(),
-          // SingleActivator(LogicalKeyboardKey.arrowUp): LeftKeyAction(),
-          // SingleActivator(LogicalKeyboardKey.arrowDown): RightKeyAction(),
-          CharacterActivator("h"): LeftKeyAction(),
-          CharacterActivator("l"): RightKeyAction(),
-          CharacterActivator("j"): LeftKeyAction(),
-          CharacterActivator("k"): RightKeyAction(),
-          CharacterActivator("e"): EditAction(),
-          CharacterActivator("x"): DeleteAction(),
-          CharacterActivator("i"): CreateAction(),
-          CharacterActivator("v"): PasteAction(),
-          CharacterActivator("r"): RefreshAction(),
-        },
-        child: Focus(
-          focusNode: focusNode,
-          autofocus: true,
-          child: Scaffold(
-            appBar: AppBar(
-              title: const Text('Song List'),
-            ),
-            body: listSongs(),
-            floatingActionButton: FloatingActionButton(
-              onPressed: () {
-                _createSong();
-              },
-              child: const Icon(Icons.add),
-            ),
+      shortcuts: const {
+        SingleActivator(LogicalKeyboardKey.escape): PopAction(),
+        SingleActivator(LogicalKeyboardKey.arrowLeft): LeftKeyAction(),
+        SingleActivator(LogicalKeyboardKey.arrowRight): RightKeyAction(),
+        // SingleActivator(LogicalKeyboardKey.arrowUp): LeftKeyAction(),
+        // SingleActivator(LogicalKeyboardKey.arrowDown): RightKeyAction(),
+        CharacterActivator("h"): LeftKeyAction(),
+        CharacterActivator("l"): RightKeyAction(),
+        CharacterActivator("j"): LeftKeyAction(),
+        CharacterActivator("k"): RightKeyAction(),
+        CharacterActivator("e"): EditAction(),
+        CharacterActivator("x"): DeleteAction(),
+        CharacterActivator("i"): CreateAction(),
+        CharacterActivator("v"): PasteAction(),
+        CharacterActivator("r"): RefreshAction(),
+      },
+      child: Focus(
+        focusNode: focusNode,
+        autofocus: true,
+        child: Scaffold(
+          appBar: AppBar(
+            title: const Text('Song List'),
+          ),
+          body: listSongs(),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () {
+              _createSong();
+            },
+            child: const Icon(Icons.add),
           ),
         ),
       ),

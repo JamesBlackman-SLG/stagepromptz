@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
+import 'package:stagepromptz/keyboard_shortcut.dart';
 import 'action_intents.dart';
 import 'settings_provider.dart';
 import 'song_list_provider.dart';
@@ -11,10 +11,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   runApp(
-    // ChangeNotifierProvider<SongListProvider>(
-    //   create: (context) => SongListProvider(),
-    //   child: const StagePromptz(),
-    // ),
     MultiProvider(
       providers: [
         ChangeNotifierProvider<SongListProvider>(
@@ -36,13 +32,14 @@ class StagePromptz extends StatelessWidget {
   Widget build(BuildContext context) {
     double textScaleFactor =
         Provider.of<SettingsProvider>(context).settings.textScaleFactor;
-    return Actions(
+    return KeyboardShortcut(
       actions: {
         IncrementTextScaleFactorAction:
             CallbackAction<IncrementTextScaleFactorAction>(
           onInvoke: (action) {
             Provider.of<SettingsProvider>(context, listen: false)
                 .increaseTextScaleFactor();
+            return null;
           },
         ),
         DecrementTextScaleFactorAction:
@@ -50,31 +47,30 @@ class StagePromptz extends StatelessWidget {
           onInvoke: (action) {
             Provider.of<SettingsProvider>(context, listen: false)
                 .decreaseTextScaleFactor();
+            return null;
           },
         ),
       },
-      child: Shortcuts(
-        shortcuts: const {
-          CharacterActivator('f'): IncrementTextScaleFactorAction(),
-          CharacterActivator('d'): DecrementTextScaleFactorAction(),
-        },
-        child: MediaQuery(
-          data: MediaQuery.of(context).copyWith(
-            textScaler: TextScaler.linear(textScaleFactor),
+      shortcuts: const {
+        CharacterActivator('f'): IncrementTextScaleFactorAction(),
+        CharacterActivator('d'): DecrementTextScaleFactorAction(),
+      },
+      child: MediaQuery(
+        data: MediaQuery.of(context).copyWith(
+          textScaler: TextScaler.linear(textScaleFactor),
+        ),
+        child: MaterialApp(
+          title: 'StagePromptz',
+          home: SongList(
+            songListProvider: Provider.of<SongListProvider>(context),
           ),
-          child: MaterialApp(
-            title: 'StagePromptz',
-            home: SongList(
-              songListProvider: Provider.of<SongListProvider>(context),
-            ),
-            debugShowCheckedModeBanner: false,
-            theme: ThemeData(
-              brightness: Brightness.dark,
-              primarySwatch: Colors.blue,
-              textTheme: GoogleFonts.robotoMonoTextTheme().copyWith(
-                bodyLarge: GoogleFonts.robotoMono().copyWith(
-                  color: Colors.white,
-                ),
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(
+            brightness: Brightness.dark,
+            primarySwatch: Colors.blue,
+            textTheme: GoogleFonts.robotoMonoTextTheme().copyWith(
+              bodyLarge: GoogleFonts.robotoMono().copyWith(
+                color: Colors.white,
               ),
             ),
           ),
