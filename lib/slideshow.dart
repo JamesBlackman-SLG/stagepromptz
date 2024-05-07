@@ -96,6 +96,10 @@ class SlideshowState extends State<Slideshow> {
           onInvoke: (action) {
             Provider.of<SettingsProvider>(context, listen: false)
                 .increaseTextScaleFactor();
+            setState(() {
+              _scrollController.jumpTo(0);
+            });
+
             return null;
           },
         ),
@@ -104,6 +108,9 @@ class SlideshowState extends State<Slideshow> {
           onInvoke: (action) {
             Provider.of<SettingsProvider>(context, listen: false)
                 .decreaseTextScaleFactor();
+            setState(() {
+              _scrollController.jumpTo(0);
+            });
             return null;
           },
         ),

@@ -22,7 +22,6 @@ class SongListProvider with ChangeNotifier {
 
   set currentIndex(int index) {
     _currentIndex = index;
-    notifyListeners();
   }
 
   Song? get editingSong => _editingSong;
@@ -69,8 +68,9 @@ class SongListProvider with ChangeNotifier {
   void downloadSongs() async {
     String fileContents = await songService.exportSongsToFile();
     String? selectedPath = await FilePicker.platform.saveFile(
-      dialogTitle: 'Please select an output file:',
-      fileName: 'saved_text.txt', // Suggested file name and extension
+      dialogTitle: 'Please select a json file:',
+      fileName: 'songs.json',
+      allowedExtensions: ['json'],
     );
 
     if (selectedPath != null) {

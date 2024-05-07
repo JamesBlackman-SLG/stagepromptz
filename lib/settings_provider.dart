@@ -6,7 +6,9 @@ import 'settings.dart';
 class SettingsProvider with ChangeNotifier {
   final settingsService = SettingsService();
 
-  late final Settings _settings;
+  late Settings _settings = Settings(
+    textScaleFactor: 1.0,
+  );
 
   SettingsProvider() {
     loadSettings().then((settings) {
