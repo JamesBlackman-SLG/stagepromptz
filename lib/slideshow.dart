@@ -21,8 +21,8 @@ class SlideshowState extends State<Slideshow> {
   late int _currentIndex;
   final ScrollController _scrollController = ScrollController();
   Timer? _timer;
-  final int durationMinutes = 3; // Duration in minutes
-  final int durationSeconds = 0; // Additional seconds
+  final int durationMinutes = 3;
+  final int durationSeconds = 0;
   @override
   initState() {
     _currentIndex = widget._songListProvider.currentIndex;
@@ -31,9 +31,8 @@ class SlideshowState extends State<Slideshow> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final totalDurationInSeconds = durationMinutes * 60 + durationSeconds;
       final maxScrollExtent = _scrollController.position.maxScrollExtent;
-      final double scrollIncrement = maxScrollExtent /
-          (totalDurationInSeconds /
-              0.002); // Assuming a 60Hz refresh rate (approx. 16ms per frame)
+      final double scrollIncrement =
+          maxScrollExtent / (totalDurationInSeconds / 0.002);
 
       _timer = Timer.periodic(const Duration(milliseconds: 16), (timer) {
         if (_scrollController.position.pixels >= maxScrollExtent) {

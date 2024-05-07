@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:stagepromptz/settings.dart';
@@ -92,5 +94,12 @@ class SongService {
     }
 
     return Future.value(Isar.getInstance());
+  }
+
+  Future<String> exportSongsToFile() async {
+    final isar = await db;
+    final songs = await isar.songs.where().sortByPosition().findAll();
+    String jsonData = jsonEncode(songs.map((song) => song.toJson()).toList());
+    return jsonData;
   }
 }

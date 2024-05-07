@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart' show ChangeNotifier;
 
 import 'song_service.dart';
@@ -61,5 +64,18 @@ class SongListProvider with ChangeNotifier {
 
   Future<void> updateSong(Song song) {
     return songService.updateSong(song);
+  }
+
+  void downloadSongs() async {
+    String fileContents = await songService.exportSongsToFile();
+    String? selectedPath = await FilePicker.platform.saveFile(
+      dialogTitle: 'Please select an output file:',
+      fileName: 'saved_text.txt', // Suggested file name and extension
+    );
+
+    if (selectedPath != null) {
+      final file = File(selectedPath);
+      await file.writeAsString(fileContents);
+    } else {}
   }
 }

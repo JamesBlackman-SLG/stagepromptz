@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:stagepromptz/keyboard_shortcut.dart';
 import 'action_intents.dart';
 import 'slideshow.dart';
 import 'song_editor.dart';
 import 'song_list_provider.dart';
+import 'package:file_picker/file_picker.dart';
+import 'dart:io';
 
 class SongList extends StatefulWidget {
   final SongListProvider songListProvider;
@@ -28,6 +31,19 @@ class _SongListState extends State<SongList> {
         ),
       ),
     );
+  }
+
+  // void _downloadFile() async {
+  //   final directory = await getApplicationDocumentsDirectory();
+  //   final file = File('${directory.path}/saved_text.txt');
+  //   // Write the text to a file
+  //   String fileContents = 'Hello, World!';
+  //   await file.writeAsString(fileContents);
+  //   print('File saved: ${file.path}');
+  // }
+
+  void _saveFile() async {
+    widget.songListProvider.downloadSongs();
   }
 
   void _createSong() {
@@ -133,6 +149,14 @@ class _SongListState extends State<SongList> {
         child: Scaffold(
           appBar: AppBar(
             title: const Text('Song List'),
+            actions: <Widget>[
+              IconButton(
+                icon: const Icon(Icons.download),
+                onPressed: () {
+                  _saveFile();
+                },
+              ),
+            ],
           ),
           body: listSongs(),
           floatingActionButton: FloatingActionButton(

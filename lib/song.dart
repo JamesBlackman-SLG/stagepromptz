@@ -10,4 +10,13 @@ class Song {
   @Index(unique: true)
   int position;
   Song({required this.title, required this.lyrics, required this.position});
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'lyrics': lyrics,
+      'position': position,
+    };
+  }
 }
