@@ -19,4 +19,12 @@ class Song {
       'position': position,
     };
   }
+
+  factory Song.fromJson(Map<String, dynamic> json) {
+    return Song(
+      title: json['title'],
+      lyrics: json['lyrics'],
+      position: json['position'],
+    );
+  }
 }

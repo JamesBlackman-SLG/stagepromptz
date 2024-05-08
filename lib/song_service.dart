@@ -102,4 +102,15 @@ class SongService {
     String jsonData = jsonEncode(songs.map((song) => song.toJson()).toList());
     return jsonData;
   }
+
+  Future<void> importSongsFromFile(String jsonData) async {
+    final isar = await db;
+    List<dynamic> songsData = jsonDecode(jsonData);
+    List<Song> songs =
+        songsData.map((songData) => Song.fromJson(songData)).toList();
+    isar.writeTxnSync(() {
+      isar.songs.clearSync();
+      isar.songs.putAllSync(songs);
+    });
+  }
 }

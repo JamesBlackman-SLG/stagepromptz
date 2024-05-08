@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:stagepromptz/keyboard_shortcut.dart';
 import 'action_intents.dart';
+import 'settings_provider.dart';
 import 'slideshow.dart';
 import 'song_editor.dart';
 import 'song_list_provider.dart';
@@ -32,6 +34,10 @@ class _SongListState extends State<SongList> {
 
   void _saveFile() async {
     widget.songListProvider.downloadSongs();
+  }
+
+  void _loadFile() async {
+    widget.songListProvider.importSongs();
   }
 
   void _createSong() {
@@ -74,13 +80,13 @@ class _SongListState extends State<SongList> {
         ),
         LeftKeyAction: CallbackAction<LeftKeyAction>(
           onInvoke: (Intent intent) {
-            focusNode.nextFocus();
+            focusNode.previousFocus();
             return true;
           },
         ),
         RightKeyAction: CallbackAction<RightKeyAction>(
           onInvoke: (Intent intent) {
-            focusNode.previousFocus();
+            focusNode.nextFocus();
             return true;
           },
         ),
@@ -114,22 +120,40 @@ class _SongListState extends State<SongList> {
             return true;
           },
         ),
+        IncrementTextScaleFactorAction:
+            CallbackAction<IncrementTextScaleFactorAction>(
+          onInvoke: (action) {
+            Provider.of<SettingsProvider>(context, listen: false)
+                .increaseTextScaleFactor();
+            return null;
+          },
+        ),
+        DecrementTextScaleFactorAction:
+            CallbackAction<DecrementTextScaleFactorAction>(
+          onInvoke: (action) {
+            Provider.of<SettingsProvider>(context, listen: false)
+                .decreaseTextScaleFactor();
+            return null;
+          },
+        ),
       },
       shortcuts: const {
         SingleActivator(LogicalKeyboardKey.escape): PopAction(),
         SingleActivator(LogicalKeyboardKey.arrowLeft): LeftKeyAction(),
         SingleActivator(LogicalKeyboardKey.arrowRight): RightKeyAction(),
-        // SingleActivator(LogicalKeyboardKey.arrowUp): LeftKeyAction(),
-        // SingleActivator(LogicalKeyboardKey.arrowDown): RightKeyAction(),
+        SingleActivator(LogicalKeyboardKey.arrowUp): LeftKeyAction(),
+        SingleActivator(LogicalKeyboardKey.arrowDown): RightKeyAction(),
         CharacterActivator("h"): LeftKeyAction(),
         CharacterActivator("l"): RightKeyAction(),
-        CharacterActivator("j"): LeftKeyAction(),
-        CharacterActivator("k"): RightKeyAction(),
+        CharacterActivator("k"): LeftKeyAction(),
+        CharacterActivator("j"): RightKeyAction(),
         CharacterActivator("e"): EditAction(),
         CharacterActivator("x"): DeleteAction(),
         CharacterActivator("i"): CreateAction(),
         CharacterActivator("v"): PasteAction(),
         CharacterActivator("r"): RefreshAction(),
+        CharacterActivator('f'): IncrementTextScaleFactorAction(),
+        CharacterActivator('d'): DecrementTextScaleFactorAction(),
       },
       child: Focus(
         focusNode: focusNode,
@@ -142,6 +166,12 @@ class _SongListState extends State<SongList> {
                 icon: const Icon(Icons.download),
                 onPressed: () {
                   _saveFile();
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.upload),
+                onPressed: () {
+                  _loadFile();
                 },
               ),
             ],
@@ -196,7 +226,6 @@ class _SongListState extends State<SongList> {
     return ListView.builder(
       itemCount: widget.songListProvider.songs.length,
       itemBuilder: (context, index) {
-        print(index);
         return ListTile(
           key: Key(widget.songListProvider.songs[index].id.toString()),
           onFocusChange: (v) {

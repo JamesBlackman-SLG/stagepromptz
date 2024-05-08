@@ -32,46 +32,22 @@ class StagePromptz extends StatelessWidget {
   Widget build(BuildContext context) {
     double textScaleFactor =
         Provider.of<SettingsProvider>(context).settings.textScaleFactor;
-    return KeyboardShortcut(
-      actions: {
-        IncrementTextScaleFactorAction:
-            CallbackAction<IncrementTextScaleFactorAction>(
-          onInvoke: (action) {
-            Provider.of<SettingsProvider>(context, listen: false)
-                .increaseTextScaleFactor();
-            return null;
-          },
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(
+        textScaler: TextScaler.linear(textScaleFactor),
+      ),
+      child: MaterialApp(
+        title: 'StagePromptz',
+        home: SongList(
+          songListProvider: Provider.of<SongListProvider>(context),
         ),
-        DecrementTextScaleFactorAction:
-            CallbackAction<DecrementTextScaleFactorAction>(
-          onInvoke: (action) {
-            Provider.of<SettingsProvider>(context, listen: false)
-                .decreaseTextScaleFactor();
-            return null;
-          },
-        ),
-      },
-      shortcuts: const {
-        CharacterActivator('f'): IncrementTextScaleFactorAction(),
-        CharacterActivator('d'): DecrementTextScaleFactorAction(),
-      },
-      child: MediaQuery(
-        data: MediaQuery.of(context).copyWith(
-          textScaler: TextScaler.linear(textScaleFactor),
-        ),
-        child: MaterialApp(
-          title: 'StagePromptz',
-          home: SongList(
-            songListProvider: Provider.of<SongListProvider>(context),
-          ),
-          debugShowCheckedModeBanner: false,
-          theme: ThemeData(
-            brightness: Brightness.dark,
-            primarySwatch: Colors.blue,
-            textTheme: GoogleFonts.robotoMonoTextTheme().copyWith(
-              bodyLarge: GoogleFonts.robotoMono().copyWith(
-                color: Colors.white,
-              ),
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          brightness: Brightness.dark,
+          primarySwatch: Colors.blue,
+          textTheme: GoogleFonts.robotoMonoTextTheme().copyWith(
+            bodyLarge: GoogleFonts.robotoMono().copyWith(
+              color: Colors.white,
             ),
           ),
         ),

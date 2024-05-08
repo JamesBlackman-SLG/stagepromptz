@@ -11,17 +11,11 @@ class SongListProvider with ChangeNotifier {
 
   final List<Song> _songs = [];
 
-  int _currentIndex = 0;
+  int currentIndex = 0;
 
   Song? _editingSong;
   SongListProvider() {
     loadSongs();
-  }
-
-  int get currentIndex => _currentIndex;
-
-  set currentIndex(int index) {
-    _currentIndex = index;
   }
 
   Song? get editingSong => _editingSong;
@@ -33,13 +27,13 @@ class SongListProvider with ChangeNotifier {
   List<Song> get songs => _songs;
 
   Future<void> addSong(Song song) {
-    int position = songs.isEmpty ? 0 : songs[_currentIndex].position;
+    int position = songs.isEmpty ? 0 : songs[currentIndex].position;
     return songService.insertSong(song, position);
   }
 
   Future<void> cutSong() {
-    editingSong = _songs[_currentIndex];
-    return songService.removeSong(_songs[_currentIndex]);
+    editingSong = _songs[currentIndex];
+    return songService.removeSong(_songs[currentIndex]);
   }
 
   void loadSongs() async {
@@ -57,7 +51,7 @@ class SongListProvider with ChangeNotifier {
     if (_editingSong == null) {
       return Future.value();
     }
-    int position = songs.isEmpty ? 0 : songs[_currentIndex].position;
+    int position = songs.isEmpty ? 0 : songs[currentIndex].position;
     return songService.insertSong(_editingSong!, position);
   }
 
@@ -76,6 +70,19 @@ class SongListProvider with ChangeNotifier {
     if (selectedPath != null) {
       final file = File(selectedPath);
       await file.writeAsString(fileContents);
+    } else {}
+  }
+
+  void importSongs() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['json'],
+    );
+    if (result != null) {
+      File file = File(result.files.single.path!);
+      String fileContents = await file.readAsString();
+      await songService.importSongsFromFile(fileContents);
+      loadSongs();
     } else {}
   }
 }
