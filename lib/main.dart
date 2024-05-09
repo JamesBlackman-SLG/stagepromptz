@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:stagepromptz/keyboard_shortcut.dart';
-import 'action_intents.dart';
 import 'settings_provider.dart';
 import 'song_list_provider.dart';
 import 'song_list.dart';
