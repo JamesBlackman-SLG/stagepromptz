@@ -31,6 +31,11 @@ class SongListProvider with ChangeNotifier {
     return songService.insertSong(song, position);
   }
 
+  Future<void> copySong() {
+    editingSong = _songs[currentIndex];
+    return Future.value();
+  }
+
   Future<void> cutSong() {
     editingSong = _songs[currentIndex];
     return songService.removeSong(_songs[currentIndex]);

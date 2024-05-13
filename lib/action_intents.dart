@@ -24,6 +24,10 @@ class CreateAction extends Intent {
   const CreateAction();
 }
 
+class CopyAction extends Intent {
+  const CopyAction();
+}
+
 class PasteAction extends Intent {
   const PasteAction();
 }

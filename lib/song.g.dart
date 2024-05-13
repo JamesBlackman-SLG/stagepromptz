@@ -38,21 +38,7 @@ const SongSchema = CollectionSchema(
   deserialize: _songDeserialize,
   deserializeProp: _songDeserializeProp,
   idName: r'id',
-  indexes: {
-    r'position': IndexSchema(
-      id: 5117117876086213592,
-      name: r'position',
-      unique: true,
-      replace: false,
-      properties: [
-        IndexPropertySchema(
-          name: r'position',
-          type: IndexType.value,
-          caseSensitive: false,
-        )
-      ],
-    )
-  },
+  indexes: {},
   links: {},
   embeddedSchemas: {},
   getId: _songGetId,
@@ -128,72 +114,10 @@ void _songAttach(IsarCollection<dynamic> col, Id id, Song object) {
   object.id = id;
 }
 
-extension SongByIndex on IsarCollection<Song> {
-  Future<Song?> getByPosition(int position) {
-    return getByIndex(r'position', [position]);
-  }
-
-  Song? getByPositionSync(int position) {
-    return getByIndexSync(r'position', [position]);
-  }
-
-  Future<bool> deleteByPosition(int position) {
-    return deleteByIndex(r'position', [position]);
-  }
-
-  bool deleteByPositionSync(int position) {
-    return deleteByIndexSync(r'position', [position]);
-  }
-
-  Future<List<Song?>> getAllByPosition(List<int> positionValues) {
-    final values = positionValues.map((e) => [e]).toList();
-    return getAllByIndex(r'position', values);
-  }
-
-  List<Song?> getAllByPositionSync(List<int> positionValues) {
-    final values = positionValues.map((e) => [e]).toList();
-    return getAllByIndexSync(r'position', values);
-  }
-
-  Future<int> deleteAllByPosition(List<int> positionValues) {
-    final values = positionValues.map((e) => [e]).toList();
-    return deleteAllByIndex(r'position', values);
-  }
-
-  int deleteAllByPositionSync(List<int> positionValues) {
-    final values = positionValues.map((e) => [e]).toList();
-    return deleteAllByIndexSync(r'position', values);
-  }
-
-  Future<Id> putByPosition(Song object) {
-    return putByIndex(r'position', object);
-  }
-
-  Id putByPositionSync(Song object, {bool saveLinks = true}) {
-    return putByIndexSync(r'position', object, saveLinks: saveLinks);
-  }
-
-  Future<List<Id>> putAllByPosition(List<Song> objects) {
-    return putAllByIndex(r'position', objects);
-  }
-
-  List<Id> putAllByPositionSync(List<Song> objects, {bool saveLinks = true}) {
-    return putAllByIndexSync(r'position', objects, saveLinks: saveLinks);
-  }
-}
-
 extension SongQueryWhereSort on QueryBuilder<Song, Song, QWhere> {
   QueryBuilder<Song, Song, QAfterWhere> anyId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
-    });
-  }
-
-  QueryBuilder<Song, Song, QAfterWhere> anyPosition() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        const IndexWhereClause.any(indexName: r'position'),
-      );
     });
   }
 }
@@ -259,94 +183,6 @@ extension SongQueryWhere on QueryBuilder<Song, Song, QWhereClause> {
         lower: lowerId,
         includeLower: includeLower,
         upper: upperId,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
-  QueryBuilder<Song, Song, QAfterWhereClause> positionEqualTo(int position) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'position',
-        value: [position],
-      ));
-    });
-  }
-
-  QueryBuilder<Song, Song, QAfterWhereClause> positionNotEqualTo(int position) {
-    return QueryBuilder.apply(this, (query) {
-      if (query.whereSort == Sort.asc) {
-        return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'position',
-              lower: [],
-              upper: [position],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'position',
-              lower: [position],
-              includeLower: false,
-              upper: [],
-            ));
-      } else {
-        return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'position',
-              lower: [position],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'position',
-              lower: [],
-              upper: [position],
-              includeUpper: false,
-            ));
-      }
-    });
-  }
-
-  QueryBuilder<Song, Song, QAfterWhereClause> positionGreaterThan(
-    int position, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'position',
-        lower: [position],
-        includeLower: include,
-        upper: [],
-      ));
-    });
-  }
-
-  QueryBuilder<Song, Song, QAfterWhereClause> positionLessThan(
-    int position, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'position',
-        lower: [],
-        upper: [position],
-        includeUpper: include,
-      ));
-    });
-  }
-
-  QueryBuilder<Song, Song, QAfterWhereClause> positionBetween(
-    int lowerPosition,
-    int upperPosition, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'position',
-        lower: [lowerPosition],
-        includeLower: includeLower,
-        upper: [upperPosition],
         includeUpper: includeUpper,
       ));
     });

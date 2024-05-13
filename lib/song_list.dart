@@ -53,6 +53,10 @@ class _SongListState extends State<SongList> {
     );
   }
 
+  void _copySong() {
+    widget.songListProvider.copySong();
+  }
+
   void _cutSong() {
     widget.songListProvider.cutSong().then((value) {
       _refreshSongs();
@@ -108,6 +112,12 @@ class _SongListState extends State<SongList> {
             return true;
           },
         ),
+        CopyAction: CallbackAction<CopyAction>(
+          onInvoke: (Intent intent) {
+            _copySong();
+            return true;
+          },
+        ),
         PasteAction: CallbackAction<PasteAction>(
           onInvoke: (Intent intent) {
             _pasteSong();
@@ -148,6 +158,7 @@ class _SongListState extends State<SongList> {
         CharacterActivator("k"): LeftKeyAction(),
         CharacterActivator("j"): RightKeyAction(),
         CharacterActivator("e"): EditAction(),
+        CharacterActivator("c"): CopyAction(),
         CharacterActivator("x"): DeleteAction(),
         CharacterActivator("i"): CreateAction(),
         CharacterActivator("v"): PasteAction(),

@@ -7,7 +7,7 @@ class Song {
   Id id = Isar.autoIncrement;
   String title;
   String lyrics;
-  @Index(unique: true)
+  // @Index(unique: true)
   int position;
   Song({required this.title, required this.lyrics, required this.position});
 

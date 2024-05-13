@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:stagepromptz/keyboard_shortcut.dart';
 import 'action_intents.dart';
 import 'settings_provider.dart';
+import 'song_editor.dart';
 import 'song_list_provider.dart';
 
 class Slideshow extends StatefulWidget {
@@ -19,9 +20,9 @@ class Slideshow extends StatefulWidget {
 
 class SlideshowState extends State<Slideshow> {
   late int _currentIndex;
-  final ScrollController _scrollController = ScrollController();
-  Timer? _timer;
-  final int durationMinutes = 3;
+  // final ScrollController _scrollController = ScrollController();
+  // Timer? _timer;
+  final int durationMinutes = 4;
   final int durationSeconds = 0;
   @override
   initState() {
@@ -29,26 +30,26 @@ class SlideshowState extends State<Slideshow> {
 
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final totalDurationInSeconds = durationMinutes * 60 + durationSeconds;
-      final maxScrollExtent = _scrollController.position.maxScrollExtent;
-      final double scrollIncrement =
-          maxScrollExtent / (totalDurationInSeconds / 0.002);
+      // final totalDurationInSeconds = durationMinutes * 60 + durationSeconds;
+      // final maxScrollExtent = _scrollController.position.maxScrollExtent;
+      // final double scrollIncrement =
+      // maxScrollExtent / (totalDurationInSeconds / 0.002);
 
-      _timer = Timer.periodic(const Duration(milliseconds: 16), (timer) {
-        if (_scrollController.position.pixels >= maxScrollExtent) {
-          timer.cancel();
-        } else {
-          _scrollController
-              .jumpTo(_scrollController.position.pixels + scrollIncrement);
-        }
-      });
+      // _timer = Timer.periodic(const Duration(milliseconds: 16), (timer) {
+      //   if (_scrollController.position.pixels >= maxScrollExtent) {
+      //     timer.cancel();
+      //   } else {
+      //     _scrollController
+      //         .jumpTo(_scrollController.position.pixels + scrollIncrement);
+      //   }
+      // });
     });
   }
 
   @override
   void dispose() {
-    _scrollController.dispose();
-    _timer?.cancel();
+    // _scrollController.dispose();
+    // _timer?.cancel();
     super.dispose();
   }
 
@@ -56,7 +57,7 @@ class SlideshowState extends State<Slideshow> {
     if (_currentIndex > 0) {
       setState(() {
         _currentIndex--;
-        _scrollController.jumpTo(0);
+        // _scrollController.jumpTo(0);
       });
     }
   }
@@ -65,9 +66,39 @@ class SlideshowState extends State<Slideshow> {
     if (_currentIndex < widget._songListProvider.songs.length - 1) {
       setState(() {
         _currentIndex++;
-        _scrollController.jumpTo(0);
+        // _scrollController.jumpTo(0);
       });
     }
+  }
+
+  void _incrementFontSize() {
+    Provider.of<SettingsProvider>(context, listen: false)
+        .increaseTextScaleFactor();
+    setState(() {
+      // _scrollController.jumpTo(0);
+    });
+  }
+
+  void _decrementFontSize() {
+    Provider.of<SettingsProvider>(context, listen: false)
+        .decreaseTextScaleFactor();
+    setState(() {
+      // _scrollController.jumpTo(0);
+    });
+  }
+
+  void _editSong(int index) {
+    widget._songListProvider.editingSong =
+        widget._songListProvider.songs[index];
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SongEditor(
+          createNew: false,
+          widget._songListProvider,
+        ),
+      ),
+    );
   }
 
   @override
@@ -94,11 +125,7 @@ class SlideshowState extends State<Slideshow> {
         IncrementTextScaleFactorAction:
             CallbackAction<IncrementTextScaleFactorAction>(
           onInvoke: (action) {
-            Provider.of<SettingsProvider>(context, listen: false)
-                .increaseTextScaleFactor();
-            setState(() {
-              _scrollController.jumpTo(0);
-            });
+            _incrementFontSize();
 
             return null;
           },
@@ -106,11 +133,8 @@ class SlideshowState extends State<Slideshow> {
         DecrementTextScaleFactorAction:
             CallbackAction<DecrementTextScaleFactorAction>(
           onInvoke: (action) {
-            Provider.of<SettingsProvider>(context, listen: false)
-                .decreaseTextScaleFactor();
-            setState(() {
-              _scrollController.jumpTo(0);
-            });
+            _decrementFontSize();
+
             return null;
           },
         ),
@@ -135,7 +159,7 @@ class SlideshowState extends State<Slideshow> {
             children: [
               Expanded(
                 child: ListView.builder(
-                  controller: _scrollController,
+                  // controller: _scrollController,
                   shrinkWrap: true,
                   itemCount: widget._songListProvider.songs.length,
                   itemBuilder: (context, index) {
@@ -162,6 +186,29 @@ class SlideshowState extends State<Slideshow> {
                     onPressed: () => Navigator.pop(context),
                     child: const Icon(Icons.list),
                   ),
+                  ElevatedButton(
+                      onPressed: () {
+                        _editSong(_currentIndex);
+                      },
+                      child: const Icon(Icons.edit)),
+                  ElevatedButton(
+                    onPressed: () {
+                      _incrementFontSize();
+                    },
+                    child: const Icon(Icons.arrow_circle_up),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      _decrementFontSize();
+                    },
+                    child: const Icon(Icons.arrow_circle_down),
+                  ),
+                  // ElevatedButton(
+                  //   onPressed: () {
+                  //     // _scrollController.jumpTo(0);
+                  //   },
+                  //   child: const Icon(Icons.stop),
+                  // ),
                   ElevatedButton(
                     onPressed: _nextSong,
                     child: const Icon(Icons.arrow_right),

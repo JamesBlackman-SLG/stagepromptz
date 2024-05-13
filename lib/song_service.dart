@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:stagepromptz/settings.dart';
@@ -49,18 +48,34 @@ class SongService {
   }
 
   Future<void> insertSong(Song song, int position) async {
-    // set the new position to the song
     final isar = await db;
+    print('inserting song at position $position');
     isar.writeTxnSync<void>(() {
       // increment positions of songs after the inserted one
       List<Song> songs =
-          isar.songs.filter().positionGreaterThan(position - 1).findAllSync();
+          isar.songs.filter().positionGreaterThan(position).findAllSync();
+      List<Song> updatedSongs = [];
+
       for (var s in songs) {
-        s.position += 1;
-        isar.songs.putSync(s);
+        print("moving...");
+        print(s.title);
+        print(s.position);
+        s.position++;
+        print(s.title);
+        print(s.position);
+        // isar.songs.putSync(s);
+        updatedSongs.add(s);
       }
-      song.position = position;
-      isar.songs.putSync(song);
+      isar.songs.putAllSync(updatedSongs);
+      Song insertedSong = Song(
+        title: song.title,
+        lyrics: song.lyrics,
+        position: position,
+      );
+      insertedSong.position = position;
+      print(
+          "Now, inserting ${insertedSong.title} at position ${insertedSong.position}");
+      isar.songs.putSync(insertedSong);
     });
   }
 
