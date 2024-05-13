@@ -20,10 +20,11 @@ class Slideshow extends StatefulWidget {
 
 class SlideshowState extends State<Slideshow> {
   late int _currentIndex;
-  // final ScrollController _scrollController = ScrollController();
-  // Timer? _timer;
-  final int durationMinutes = 4;
-  final int durationSeconds = 0;
+  final ScrollController _scrollController = ScrollController();
+  Timer? _scrollTimer;
+  bool _isScrolling = false;
+  // final int durationMinutes = 4;
+  // final int durationSeconds = 0;
   @override
   initState() {
     _currentIndex = widget._songListProvider.currentIndex;
@@ -48,16 +49,35 @@ class SlideshowState extends State<Slideshow> {
 
   @override
   void dispose() {
-    // _scrollController.dispose();
-    // _timer?.cancel();
+    _scrollController.dispose();
+    _scrollTimer?.cancel();
     super.dispose();
+  }
+
+  void startScrolling() {
+    if (!_isScrolling) {
+      setState(() {
+        _isScrolling = true;
+      });
+      _scrollTimer?.cancel();
+      _scrollTimer = Timer.periodic(const Duration(milliseconds: 60), (timer) {
+        _scrollDown();
+      });
+    } else {
+      setState(() {
+        _isScrolling = false;
+      });
+      _scrollTimer?.cancel();
+    }
   }
 
   void _previousSong() {
     if (_currentIndex > 0) {
       setState(() {
         _currentIndex--;
-        // _scrollController.jumpTo(0);
+        _scrollController.jumpTo(0);
+        _isScrolling = false;
+        _scrollTimer?.cancel();
       });
     }
   }
@@ -66,7 +86,9 @@ class SlideshowState extends State<Slideshow> {
     if (_currentIndex < widget._songListProvider.songs.length - 1) {
       setState(() {
         _currentIndex++;
-        // _scrollController.jumpTo(0);
+        _scrollController.jumpTo(0);
+        _isScrolling = false;
+        _scrollTimer?.cancel();
       });
     }
   }
@@ -75,7 +97,7 @@ class SlideshowState extends State<Slideshow> {
     Provider.of<SettingsProvider>(context, listen: false)
         .increaseTextScaleFactor();
     setState(() {
-      // _scrollController.jumpTo(0);
+      _scrollController.jumpTo(0);
     });
   }
 
@@ -83,7 +105,7 @@ class SlideshowState extends State<Slideshow> {
     Provider.of<SettingsProvider>(context, listen: false)
         .decreaseTextScaleFactor();
     setState(() {
-      // _scrollController.jumpTo(0);
+      _scrollController.jumpTo(0);
     });
   }
 
@@ -99,6 +121,10 @@ class SlideshowState extends State<Slideshow> {
         ),
       ),
     );
+  }
+
+  void _scrollDown() {
+    _scrollController.jumpTo(_scrollController.position.pixels + 4);
   }
 
   @override
@@ -138,13 +164,20 @@ class SlideshowState extends State<Slideshow> {
             return null;
           },
         ),
+        ScrollDownAction: CallbackAction<ScrollDownAction>(
+          onInvoke: (action) {
+            print("invoke $_isScrolling");
+            startScrolling();
+            return null;
+          },
+        ),
       },
       shortcuts: const {
         SingleActivator(LogicalKeyboardKey.escape): PopAction(),
         SingleActivator(LogicalKeyboardKey.arrowLeft): LeftKeyAction(),
         SingleActivator(LogicalKeyboardKey.arrowRight): RightKeyAction(),
-        SingleActivator(LogicalKeyboardKey.arrowUp): LeftKeyAction(),
-        SingleActivator(LogicalKeyboardKey.arrowDown): RightKeyAction(),
+        // SingleActivator(LogicalKeyboardKey.arrowUp): LeftKeyAction(),
+        SingleActivator(LogicalKeyboardKey.arrowDown): ScrollDownAction(),
         CharacterActivator("h"): LeftKeyAction(),
         CharacterActivator("l"): RightKeyAction(),
         CharacterActivator("k"): LeftKeyAction(),
@@ -159,7 +192,7 @@ class SlideshowState extends State<Slideshow> {
             children: [
               Expanded(
                 child: ListView.builder(
-                  // controller: _scrollController,
+                  controller: _scrollController,
                   shrinkWrap: true,
                   itemCount: widget._songListProvider.songs.length,
                   itemBuilder: (context, index) {
