@@ -6,6 +6,7 @@ part 'settings.g.dart';
 class Settings {
   Id id = Isar.autoIncrement;
   double textScaleFactor = 1.0;
+  String? fileName;
   Settings({
     required this.textScaleFactor,
   });

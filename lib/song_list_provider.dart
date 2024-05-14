@@ -64,21 +64,32 @@ class SongListProvider with ChangeNotifier {
     return songService.updateSong(song);
   }
 
-  void downloadSongs() async {
+  void newSongBook() async {
+    songService.cleanDb().then((value) {
+      songs.clear();
+      notifyListeners();
+    });
+  }
+
+  Future<String> downloadSongs(String fileName) async {
     String fileContents = await songService.exportSongsToFile();
     String? selectedPath = await FilePicker.platform.saveFile(
       dialogTitle: 'Please select a json file:',
-      fileName: 'songs.json',
+      fileName: fileName,
       allowedExtensions: ['json'],
     );
 
     if (selectedPath != null) {
       final file = File(selectedPath);
       await file.writeAsString(fileContents);
-    } else {}
+      String fileName = selectedPath.split(Platform.pathSeparator).last;
+      return fileName;
+    } else {
+      return "";
+    }
   }
 
-  void importSongs() async {
+  Future<String> importSongs() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['json'],
@@ -88,6 +99,15 @@ class SongListProvider with ChangeNotifier {
       String fileContents = await file.readAsString();
       await songService.importSongsFromFile(fileContents);
       loadSongs();
-    } else {}
+      String fileName =
+          result.files.single.path!.split(Platform.pathSeparator).last;
+      return fileName;
+    } else {
+      return "";
+    }
+  }
+
+  void reorderSongs(List<Song> songs) async {
+    await songService.reorderSongs(songs);
   }
 }

@@ -3,8 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:stagepromptz/keyboard_shortcut.dart';
 import 'action_intents.dart';
+import 'config.dart';
+import 'settings.dart';
 import 'settings_provider.dart';
 import 'slideshow.dart';
+import 'song.dart';
 import 'song_editor.dart';
 import 'song_list_provider.dart';
 
@@ -32,14 +35,6 @@ class _SongListState extends State<SongList> {
     );
   }
 
-  void _saveFile() async {
-    widget.songListProvider.downloadSongs();
-  }
-
-  void _loadFile() async {
-    widget.songListProvider.importSongs();
-  }
-
   void _createSong() {
     widget.songListProvider.editingSong = null;
     Navigator.push(
@@ -59,12 +54,14 @@ class _SongListState extends State<SongList> {
 
   void _cutSong() {
     widget.songListProvider.cutSong().then((value) {
+      widget.songListProvider.reorderSongs(widget.songListProvider.songs);
       _refreshSongs();
     });
   }
 
   void _pasteSong() {
     widget.songListProvider.pasteSong().then((value) {
+      widget.songListProvider.reorderSongs(widget.songListProvider.songs);
       _refreshSongs();
     });
   }
@@ -75,6 +72,8 @@ class _SongListState extends State<SongList> {
 
   @override
   Widget build(BuildContext context) {
+    Settings settings =
+        Provider.of<SettingsProvider>(context, listen: true).settings;
     return KeyboardShortcut(
       actions: {
         PopAction: CallbackAction<PopAction>(
@@ -127,6 +126,7 @@ class _SongListState extends State<SongList> {
         RefreshAction: CallbackAction<RefreshAction>(
           onInvoke: (Intent intent) {
             _refreshSongs();
+            widget.songListProvider.reorderSongs(widget.songListProvider.songs);
             return true;
           },
         ),
@@ -146,13 +146,26 @@ class _SongListState extends State<SongList> {
             return null;
           },
         ),
+        SelectSongAction: CallbackAction<SelectSongAction>(
+          onInvoke: (Intent intent) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => Slideshow(
+                  widget.songListProvider,
+                ),
+              ),
+            );
+            return true;
+          },
+        ),
       },
       shortcuts: const {
         SingleActivator(LogicalKeyboardKey.escape): PopAction(),
         SingleActivator(LogicalKeyboardKey.arrowLeft): LeftKeyAction(),
         SingleActivator(LogicalKeyboardKey.arrowRight): RightKeyAction(),
         SingleActivator(LogicalKeyboardKey.arrowUp): LeftKeyAction(),
-        SingleActivator(LogicalKeyboardKey.arrowDown): RightKeyAction(),
+        SingleActivator(LogicalKeyboardKey.arrowDown): SelectSongAction(),
         CharacterActivator("h"): LeftKeyAction(),
         CharacterActivator("l"): RightKeyAction(),
         CharacterActivator("k"): LeftKeyAction(),
@@ -171,18 +184,25 @@ class _SongListState extends State<SongList> {
         autofocus: true,
         child: Scaffold(
           appBar: AppBar(
-            title: const Text('Song List'),
+            title: settings.fileName == null
+                ? const Text('stagepromptz')
+                : Text(settings.fileName!),
             actions: <Widget>[
               IconButton(
-                icon: const Icon(Icons.download),
+                icon: const Icon(Icons.settings),
                 onPressed: () {
-                  _saveFile();
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.upload),
-                onPressed: () {
-                  _loadFile();
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return Dialog(
+                        child: SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.8,
+                          height: MediaQuery.of(context).size.height * 0.8,
+                          child: const Config(),
+                        ),
+                      );
+                    },
+                  );
                 },
               ),
             ],
@@ -233,35 +253,57 @@ class _SongListState extends State<SongList> {
   //   );
   // }
 
-  ListView listSongs() {
-    return ListView.builder(
-      itemCount: widget.songListProvider.songs.length,
-      itemBuilder: (context, index) {
-        return ListTile(
-          key: Key(widget.songListProvider.songs[index].id.toString()),
-          onFocusChange: (v) {
-            if (v) widget.songListProvider.currentIndex = index;
-          },
-          title: Text(
-            widget.songListProvider.songs[index].title,
-          ),
-          leading: Text('${widget.songListProvider.songs[index].position}'),
-          onLongPress: () {
-            _editSong(index);
-          },
-          onTap: () {
-            widget.songListProvider.currentIndex = index;
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => Slideshow(
-                  widget.songListProvider,
-                ),
-              ),
-            );
-          },
-        );
+  Widget listSongs() {
+    return RefreshIndicator(
+      onRefresh: () async {
+        List<Song> songs = widget.songListProvider.songs;
+        widget.songListProvider.reorderSongs(songs);
+        _refreshSongs();
       },
+      child: ReorderableListView.builder(
+        onReorder: (oldIndex, newIndex) {
+          if (oldIndex < newIndex) {
+            newIndex -= 1;
+          }
+          List<Song> songs = widget.songListProvider.songs;
+          final Song song = songs.removeAt(oldIndex);
+          songs.insert(newIndex, song);
+          widget.songListProvider.reorderSongs(songs);
+          _refreshSongs();
+        },
+        buildDefaultDragHandles: true,
+        itemCount: widget.songListProvider.songs.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            key: Key(widget.songListProvider.songs[index].id.toString()),
+            onFocusChange: (v) {
+              if (v) widget.songListProvider.currentIndex = index;
+            },
+            title: Text(
+              widget.songListProvider.songs[index].title,
+            ),
+            leading: Text('${widget.songListProvider.songs[index].position}'),
+            trailing: ReorderableDragStartListener(
+              index: index,
+              child: const Icon(Icons.drag_handle, color: Colors.white),
+            ),
+            onLongPress: () {
+              _editSong(index);
+            },
+            onTap: () {
+              widget.songListProvider.currentIndex = index;
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => Slideshow(
+                    widget.songListProvider,
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }

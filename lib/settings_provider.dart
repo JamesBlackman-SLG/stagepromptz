@@ -39,4 +39,10 @@ class SettingsProvider with ChangeNotifier {
     saveSettings(_settings);
     notifyListeners();
   }
+
+  void setFileName(String? fileName) {
+    _settings.fileName = fileName;
+    saveSettings(_settings);
+    notifyListeners();
+  }
 }

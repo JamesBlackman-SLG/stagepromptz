@@ -47,3 +47,11 @@ class DecrementTextScaleFactorAction extends Intent {
 class ScrollDownAction extends Intent {
   const ScrollDownAction();
 }
+
+class ScrollUpAction extends Intent {
+  const ScrollUpAction();
+}
+
+class SelectSongAction extends Intent {
+  const SelectSongAction();
+}

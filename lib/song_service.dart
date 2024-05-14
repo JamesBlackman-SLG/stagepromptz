@@ -49,7 +49,6 @@ class SongService {
 
   Future<void> insertSong(Song song, int position) async {
     final isar = await db;
-    print('inserting song at position $position');
     isar.writeTxnSync<void>(() {
       // increment positions of songs after the inserted one
       List<Song> songs =
@@ -57,13 +56,7 @@ class SongService {
       List<Song> updatedSongs = [];
 
       for (var s in songs) {
-        print("moving...");
-        print(s.title);
-        print(s.position);
         s.position++;
-        print(s.title);
-        print(s.position);
-        // isar.songs.putSync(s);
         updatedSongs.add(s);
       }
       isar.songs.putAllSync(updatedSongs);
@@ -73,10 +66,24 @@ class SongService {
         position: position,
       );
       insertedSong.position = position;
-      print(
-          "Now, inserting ${insertedSong.title} at position ${insertedSong.position}");
       isar.songs.putSync(insertedSong);
     });
+  }
+
+  Future<void> reorderSongs(List<Song> updatedSongs) async {
+    if (updatedSongs.isEmpty) {
+      return;
+    }
+
+    // Ensure the updatedSongs list is not modified after awaiting db
+    List<Song> songsToReorder = List.from(updatedSongs);
+    final isar = await db;
+    for (int i = 0; i < songsToReorder.length; i++) {
+      isar.writeTxnSync(() {
+        songsToReorder[i].position = i + 1;
+        isar.songs.putSync(songsToReorder[i]);
+      });
+    }
   }
 
   Stream<List<Song>> listenToSongs() async* {

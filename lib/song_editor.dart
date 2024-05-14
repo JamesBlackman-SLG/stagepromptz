@@ -49,6 +49,7 @@ class SongEditorState extends State<SongEditor> {
     ))
         .then((value) {
       widget._songListProvider.loadSongs();
+      widget._songListProvider.reorderSongs(widget._songListProvider.songs);
       _titleController.clear();
       _lyricsController.clear();
       Navigator.pop(context);
@@ -61,6 +62,7 @@ class SongEditorState extends State<SongEditor> {
 
     widget._songListProvider.updateSong(song!).then((value) {
       widget._songListProvider.loadSongs();
+      widget._songListProvider.reorderSongs(widget._songListProvider.songs);
       _titleController.clear();
       _lyricsController.clear();
       Navigator.pop(context);
@@ -90,6 +92,7 @@ class SongEditorState extends State<SongEditor> {
                   icon: const Icon(Icons.delete),
                   onPressed: () {
                     widget._songListProvider.cutSong();
+                    widget._songListProvider.loadSongs();
                     Navigator.pop(context);
                   },
                 ),

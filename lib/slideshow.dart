@@ -22,7 +22,9 @@ class SlideshowState extends State<Slideshow> {
   late int _currentIndex;
   final ScrollController _scrollController = ScrollController();
   Timer? _scrollTimer;
+  Timer? _doubleTapTimer;
   bool _isScrolling = false;
+  bool _doubleTapListening = false;
   // final int durationMinutes = 4;
   // final int durationSeconds = 0;
   @override
@@ -55,6 +57,18 @@ class SlideshowState extends State<Slideshow> {
   }
 
   void startScrolling() {
+    if (!_doubleTapListening) {
+      _doubleTapListening = true;
+      _doubleTapTimer = Timer(const Duration(milliseconds: 500), () {
+        _doubleTapListening = false;
+      });
+    } else {
+      _doubleTapListening = false;
+      _doubleTapTimer?.cancel();
+      _scrollController.jumpTo(_scrollController.position.pixels + 100);
+      // stopScrolling();
+      return;
+    }
     if (!_isScrolling) {
       setState(() {
         _isScrolling = true;
@@ -69,6 +83,14 @@ class SlideshowState extends State<Slideshow> {
       });
       _scrollTimer?.cancel();
     }
+  }
+
+  void stopScrolling() {
+    _scrollTimer?.cancel();
+    setState(() {
+      _scrollController.jumpTo(0);
+      _isScrolling = false;
+    });
   }
 
   void _previousSong() {
@@ -166,7 +188,12 @@ class SlideshowState extends State<Slideshow> {
         ),
         ScrollDownAction: CallbackAction<ScrollDownAction>(
           onInvoke: (action) {
-            print("invoke $_isScrolling");
+            stopScrolling();
+            return null;
+          },
+        ),
+        ScrollUpAction: CallbackAction<ScrollUpAction>(
+          onInvoke: (action) {
             startScrolling();
             return null;
           },
@@ -176,7 +203,7 @@ class SlideshowState extends State<Slideshow> {
         SingleActivator(LogicalKeyboardKey.escape): PopAction(),
         SingleActivator(LogicalKeyboardKey.arrowLeft): LeftKeyAction(),
         SingleActivator(LogicalKeyboardKey.arrowRight): RightKeyAction(),
-        // SingleActivator(LogicalKeyboardKey.arrowUp): LeftKeyAction(),
+        SingleActivator(LogicalKeyboardKey.arrowUp): ScrollUpAction(),
         SingleActivator(LogicalKeyboardKey.arrowDown): ScrollDownAction(),
         CharacterActivator("h"): LeftKeyAction(),
         CharacterActivator("l"): RightKeyAction(),
