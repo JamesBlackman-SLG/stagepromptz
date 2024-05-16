@@ -8,28 +8,62 @@ class Config extends StatelessWidget {
   const Config({super.key});
 
   void _newFile(BuildContext context) async {
-    Provider.of<SongListProvider>(context, listen: false).newSongBook();
-    Provider.of<SettingsProvider>(context, listen: false).setFileName(null);
+    final songListProvider = context.read<SongListProvider>();
+    final settingsProvider = context.read<SettingsProvider>();
 
-    Navigator.pop(context);
+    try {
+      // Create a new songbook
+      await songListProvider.newSongBook();
+
+      // Reset the file name
+      await settingsProvider.setFileName(null);
+
+      // Navigate back to the previous screen
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.pop(context);
+      });
+    } catch (e) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to create a new file. Please try again.'),
+          ),
+        );
+      });
+    }
   }
 
   void _saveFile(BuildContext context) async {
-    String currentFileName =
-        Provider.of<SettingsProvider>(context, listen: false)
-                .settings
-                .fileName ??
-            "songs.json";
-    String fileName =
-        await Provider.of<SongListProvider>(context, listen: false)
-            .downloadSongs(currentFileName);
+    final songListProvider = context.read<SongListProvider>();
+    final settingsProvider = context.read<SettingsProvider>();
+    final currentFileName = settingsProvider.settings.fileName ?? "songs.json";
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<SettingsProvider>(context, listen: false)
-          .setFileName(fileName);
-      Navigator.pop(context);
-    });
+    final fileName =
+        await songListProvider.exportSongs(context, currentFileName);
+
+    if (fileName.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        settingsProvider.setFileName(fileName);
+        Navigator.pop(context);
+      });
+    }
   }
+
+  // void _saveFile(BuildContext context) async {
+  //   String currentFileName =
+  //       Provider.of<SettingsProvider>(context, listen: false)
+  //               .settings
+  //               .fileName ??
+  //           "songs.json";
+  //   String fileName =
+  //       await context.read<SongListProvider>().exportSongs(currentFileName);
+  //
+  //   WidgetsBinding.instance.addPostFrameCallback((_) {
+  //     Provider.of<SettingsProvider>(context, listen: false)
+  //         .setFileName(fileName);
+  //     Navigator.pop(context);
+  //   });
+  //}
 
   void _loadFile(BuildContext context) async {
     String fileName =

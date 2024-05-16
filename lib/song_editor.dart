@@ -37,15 +37,11 @@ class SongEditorState extends State<SongEditor> {
   }
 
   Future<void> _addNewSong() async {
-    int position = widget._songListProvider.songs.isEmpty
-        ? 0
-        : widget._songListProvider.songs[widget._songListProvider.currentIndex]
-            .position;
     widget._songListProvider
         .addSong(Song(
       title: _titleController.text,
       lyrics: _lyricsController.text,
-      position: position,
+      position: 0,
     ))
         .then((value) {
       widget._songListProvider.loadSongs();
@@ -91,7 +87,7 @@ class SongEditorState extends State<SongEditor> {
                 IconButton(
                   icon: const Icon(Icons.delete),
                   onPressed: () {
-                    widget._songListProvider.cutSong();
+                    widget._songListProvider.cutSong(song!);
                     widget._songListProvider.loadSongs();
                     Navigator.pop(context);
                   },
@@ -116,35 +112,58 @@ class SongEditorState extends State<SongEditor> {
                   ),
                 ),
                 const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () async {
+                        if (_titleController.text.isNotEmpty) {
+                          if (widget.createNew) {
+                            _addNewSong();
+                          } else {
+                            _updateSong();
+                          }
+                        }
+                      },
+                      child: const Text('Save Song'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Text('Cancel'),
+                    ),
+                  ],
+                )
               ],
             ),
           ),
-          bottomNavigationBar: BottomAppBar(
-            color: Colors.black,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: () async {
-                    if (_titleController.text.isNotEmpty) {
-                      if (widget.createNew) {
-                        _addNewSong();
-                      } else {
-                        _updateSong();
-                      }
-                    }
-                  },
-                  child: const Text('Save Song'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Text('Cancel'),
-                ),
-              ],
-            ),
-          ),
+          // bottomNavigationBar: BottomAppBar(
+          //   color: Colors.black,
+          //   child: Row(
+          //     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          //     children: [
+          //       ElevatedButton(
+          //         onPressed: () async {
+          //           if (_titleController.text.isNotEmpty) {
+          //             if (widget.createNew) {
+          //               _addNewSong();
+          //             } else {
+          //               _updateSong();
+          //             }
+          //           }
+          //         },
+          //         child: const Text('Save Song'),
+          //       ),
+          //       ElevatedButton(
+          //         onPressed: () {
+          //           Navigator.pop(context);
+          //         },
+          //         child: const Text('Cancel'),
+          //       ),
+          //     ],
+          //   ),
+          // ),
         ),
       ),
     );

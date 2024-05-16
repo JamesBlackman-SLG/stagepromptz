@@ -52,12 +52,12 @@ class _SongListState extends State<SongList> {
     widget.songListProvider.copySong();
   }
 
-  void _cutSong() {
-    widget.songListProvider.cutSong().then((value) {
-      widget.songListProvider.reorderSongs(widget.songListProvider.songs);
-      _refreshSongs();
-    });
-  }
+  // void _cutSong(Song song) {
+  //   widget.songListProvider.cutSong(song).then((value) {
+  //     widget.songListProvider.reorderSongs(widget.songListProvider.songs);
+  //     _refreshSongs();
+  //   });
+  // }
 
   void _pasteSong() {
     widget.songListProvider.pasteSong().then((value) {
@@ -101,7 +101,7 @@ class _SongListState extends State<SongList> {
         ),
         DeleteAction: CallbackAction<DeleteAction>(
           onInvoke: (Intent intent) {
-            _cutSong();
+            // _cutSong();
             return true;
           },
         ),
@@ -188,22 +188,25 @@ class _SongListState extends State<SongList> {
                 ? const Text('stagepromptz')
                 : Text(settings.fileName!),
             actions: <Widget>[
-              IconButton(
-                icon: const Icon(Icons.settings),
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return Dialog(
-                        child: SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.8,
-                          height: MediaQuery.of(context).size.height * 0.8,
-                          child: const Config(),
-                        ),
-                      );
-                    },
-                  );
-                },
+              Visibility(
+                visible: false,
+                child: IconButton(
+                  icon: const Icon(Icons.settings),
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return Dialog(
+                          child: SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.8,
+                            height: MediaQuery.of(context).size.height * 0.8,
+                            child: const Config(),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
               ),
             ],
           ),

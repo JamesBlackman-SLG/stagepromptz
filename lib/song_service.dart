@@ -14,6 +14,13 @@ class SongService {
 
   Future<void> addSong(Song newSong) async {
     final isar = await db;
+    final lastSong =
+        await isar.songs.where().sortByPositionDesc().limit(1).findFirst();
+    if (lastSong == null) {
+      newSong.position = 1;
+    } else {
+      newSong.position = lastSong.position + 1;
+    }
     isar.writeTxnSync<int>(() => isar.songs.putSync(newSong));
   }
 
@@ -118,7 +125,7 @@ class SongService {
     return Future.value(Isar.getInstance());
   }
 
-  Future<String> exportSongsToFile() async {
+  Future<String> toJson() async {
     final isar = await db;
     final songs = await isar.songs.where().sortByPosition().findAll();
     String jsonData = jsonEncode(songs.map((song) => song.toJson()).toList());

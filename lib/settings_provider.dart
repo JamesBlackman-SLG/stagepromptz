@@ -40,9 +40,11 @@ class SettingsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void setFileName(String? fileName) {
+  Future<void> setFileName(String? fileName) async {
     _settings.fileName = fileName;
-    saveSettings(_settings);
-    notifyListeners();
+    await saveSettings(_settings).then((value) {
+      notifyListeners();
+      return;
+    });
   }
 }

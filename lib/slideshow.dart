@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:stagepromptz/keyboard_shortcut.dart';
 import 'action_intents.dart';
@@ -246,11 +247,14 @@ class SlideshowState extends State<Slideshow> {
                     onPressed: () => Navigator.pop(context),
                     child: const Icon(Icons.list),
                   ),
-                  ElevatedButton(
-                      onPressed: () {
-                        _editSong(_currentIndex);
-                      },
-                      child: const Icon(Icons.edit)),
+                  Visibility(
+                    visible: false,
+                    child: ElevatedButton(
+                        onPressed: () {
+                          _editSong(_currentIndex);
+                        },
+                        child: const Icon(Icons.edit)),
+                  ),
                   ElevatedButton(
                     onPressed: () {
                       _incrementFontSize();
