@@ -79,6 +79,10 @@ class SongListProvider with ChangeNotifier {
     });
   }
 
+  Future<String> rawSongs() async {
+    return await songService.toJson();
+  }
+
   Future<String> exportSongs(BuildContext context, String fileName) async {
     // Request storage permissions
     if (!await Permission.storage.request().isGranted) {
@@ -95,7 +99,6 @@ class SongListProvider with ChangeNotifier {
         fileName: fileName,
         allowedExtensions: ['json'],
       );
-      print("selectedPath: $selectedPath");
       if (selectedPath != null) {
         final file = File(selectedPath);
         await file.writeAsString(fileContents);
@@ -132,6 +135,16 @@ class SongListProvider with ChangeNotifier {
   //   }
   // }
   //
+  Future<bool> rawImport(String fileContents) async {
+    bool result = await songService.importSongsFromFile(fileContents);
+    if (result) {
+      loadSongs();
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   Future<String> importSongs() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,

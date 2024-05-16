@@ -184,9 +184,10 @@ class _SongListState extends State<SongList> {
         autofocus: true,
         child: Scaffold(
           appBar: AppBar(
-            title: settings.fileName == null
-                ? const Text('stagepromptz')
-                : Text(settings.fileName!),
+            title: const Text("Stagepromptz"),
+            // title: settings.fileName == null
+            //     ? const Text('stagepromptz')
+            //     : Text(settings.fileName!),
             actions: <Widget>[
               Visibility(
                 visible: false,

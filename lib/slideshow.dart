@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:stagepromptz/keyboard_shortcut.dart';
+import 'package:stagepromptz/raw_viewer.dart';
 import 'action_intents.dart';
 import 'settings_provider.dart';
 import 'song_editor.dart';
@@ -66,7 +66,7 @@ class SlideshowState extends State<Slideshow> {
     } else {
       _doubleTapListening = false;
       _doubleTapTimer?.cancel();
-      _scrollController.jumpTo(_scrollController.position.pixels + 100);
+      _scrollController.jumpTo(_scrollController.position.pixels + 200);
       // stopScrolling();
       return;
     }
@@ -130,6 +130,15 @@ class SlideshowState extends State<Slideshow> {
     setState(() {
       _scrollController.jumpTo(0);
     });
+  }
+
+  void _rawSong() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const RawViewer(),
+      ),
+    );
   }
 
   void _editSong(int index) {
@@ -246,6 +255,14 @@ class SlideshowState extends State<Slideshow> {
                   ElevatedButton(
                     onPressed: () => Navigator.pop(context),
                     child: const Icon(Icons.list),
+                  ),
+                  Visibility(
+                    visible: true,
+                    child: ElevatedButton(
+                        onPressed: () {
+                          _rawSong();
+                        },
+                        child: const Icon(Icons.code)),
                   ),
                   Visibility(
                     visible: false,
