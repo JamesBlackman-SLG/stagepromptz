@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:stagepromptz/keyboard_shortcut.dart';
 import 'action_intents.dart';
 import 'config.dart';
-import 'settings.dart';
 import 'settings_provider.dart';
 import 'slideshow.dart';
 import 'song.dart';
@@ -52,13 +51,6 @@ class _SongListState extends State<SongList> {
     widget.songListProvider.copySong();
   }
 
-  // void _cutSong(Song song) {
-  //   widget.songListProvider.cutSong(song).then((value) {
-  //     widget.songListProvider.reorderSongs(widget.songListProvider.songs);
-  //     _refreshSongs();
-  //   });
-  // }
-
   void _pasteSong() {
     widget.songListProvider.pasteSong().then((value) {
       widget.songListProvider.reorderSongs(widget.songListProvider.songs);
@@ -72,8 +64,6 @@ class _SongListState extends State<SongList> {
 
   @override
   Widget build(BuildContext context) {
-    Settings settings =
-        Provider.of<SettingsProvider>(context, listen: true).settings;
     return KeyboardShortcut(
       actions: {
         PopAction: CallbackAction<PopAction>(

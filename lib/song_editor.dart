@@ -19,6 +19,7 @@ class SongEditorState extends State<SongEditor> {
   final TextEditingController _lyricsController = TextEditingController();
 
   late final Song? song;
+  bool madeChanges = false;
   @override
   void initState() {
     song = widget._songListProvider.editingSong;
@@ -26,6 +27,8 @@ class SongEditorState extends State<SongEditor> {
       _titleController.text = song!.title;
       _lyricsController.text = song!.lyrics;
     }
+    _titleController.addListener(_onTitleChanged);
+    _lyricsController.addListener(_onLyricsChanged);
     super.initState();
   }
 
@@ -34,6 +37,14 @@ class SongEditorState extends State<SongEditor> {
     _titleController.dispose();
     _lyricsController.dispose();
     super.dispose();
+  }
+
+  void _onTitleChanged() {
+    madeChanges = true;
+  }
+
+  void _onLyricsChanged() {
+    madeChanges = true;
   }
 
   Future<void> _addNewSong() async {
@@ -65,12 +76,64 @@ class SongEditorState extends State<SongEditor> {
     });
   }
 
+  void showConfirmExitDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text(
+            'Save Changes?',
+            style: TextStyle(color: Colors.white),
+          ),
+          content: const Text('This is a confirmation dialog'),
+          actions: <Widget>[
+            ElevatedButton(
+              child: const Text('No'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
+              },
+            ),
+            ElevatedButton(
+              child: const Text('Yes'),
+              onPressed: () {
+                saveSong();
+                Navigator.of(context).pop();
+              },
+            ),
+            ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text("Cancel")),
+          ],
+        );
+      },
+    );
+  }
+
+  void saveSong() {
+    if (_titleController.text.isNotEmpty) {
+      if (widget.createNew) {
+        _addNewSong();
+      } else {
+        _updateSong();
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Actions(
       actions: {
         PopAction: CallbackAction<PopAction>(
           onInvoke: (Intent intent) {
+            if (madeChanges) {
+              showConfirmExitDialog(context);
+            } else {
+              Navigator.of(context).pop();
+            }
+
             return Navigator.maybePop(context);
           },
         ),
@@ -117,19 +180,17 @@ class SongEditorState extends State<SongEditor> {
                   children: [
                     ElevatedButton(
                       onPressed: () async {
-                        if (_titleController.text.isNotEmpty) {
-                          if (widget.createNew) {
-                            _addNewSong();
-                          } else {
-                            _updateSong();
-                          }
-                        }
+                        saveSong();
                       },
                       child: const Text('Save Song'),
                     ),
                     ElevatedButton(
                       onPressed: () {
-                        Navigator.pop(context);
+                        if (madeChanges) {
+                          showConfirmExitDialog(context);
+                          return;
+                        }
+                        Navigator.of(context).pop();
                       },
                       child: const Text('Cancel'),
                     ),

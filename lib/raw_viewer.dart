@@ -28,12 +28,6 @@ class _RawViewerState extends State<RawViewer> {
     setState(() {
       loading = false;
     });
-    //   if (1 == 1) {
-    //     WidgetsBinding.instance.addPostFrameCallback((_) {
-    //       settingsProvider.setFileName("raw.json");
-    //       Navigator.pop(context);
-    //     });
-    //   }
   }
 
   void _import(BuildContext context) async {
