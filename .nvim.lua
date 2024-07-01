@@ -3,6 +3,11 @@
 -- your app to select which one you want to use
 require("flutter-tools").setup_project({
 	{
+		device = "linux",
+		name = "linux",
+		target = "lib/main.dart",
+	},
+	{
 		name = "windows",
 		device = "windows",
 		target = "lib/main.dart",
